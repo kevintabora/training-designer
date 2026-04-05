@@ -5,6 +5,7 @@ import AppShell from "@/components/layout/AppShell";
 import NameHeader from "@/components/layout/NameHeader";
 import CourseForm from "@/components/form/CourseForm";
 import DayTablesContainer, { getSelectableIndices } from "@/components/table/DayTablesContainer";
+import ProgramReport from "@/components/report/ProgramReport";
 import { useAppStore } from "@/store/useAppStore";
 
 export default function Home() {
@@ -52,8 +53,8 @@ export default function Home() {
         onToggleSelect={toggleSelect}
       />
 
-      {/* Report section placeholder (Phase 4) */}
-      <div id="programReport" />
+      {/* Report section */}
+      <ProgramReport />
     </AppShell>
   );
 }
