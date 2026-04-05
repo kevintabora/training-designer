@@ -149,23 +149,23 @@ export const COG_MATRIX_COLS: { key: string; label: string; contentTypes: string
     label: "Information (Facts, Concepts & Workflows)",
     contentTypes: [
       "Facts / Concepts",
-      "Workflow — Operations / Admin / Support",
+      "Workflow - Operations / Admin / Support",
     ],
   },
   {
     key: "procedural",
     label: "Procedural (Software, Tools & Communication)",
     contentTypes: [
-      "Procedural — Software / Tools",
-      "Procedural — Communication Skills",
+      "Procedural - Software / Tools",
+      "Procedural - Communication Skills",
     ],
   },
   {
     key: "problem-solving",
     label: "Problem-Solving (Software, Tools & Communication)",
     contentTypes: [
-      "Problem-Solving — Software / Tools",
-      "Problem-Solving — Communication Skills",
+      "Problem-Solving - Software / Tools",
+      "Problem-Solving - Communication Skills",
     ],
   },
 ];

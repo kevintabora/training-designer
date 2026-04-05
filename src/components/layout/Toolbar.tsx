@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { useDialog } from "@/store/useDialogStore";
 import {
@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import {
   Tooltip,
@@ -18,6 +19,8 @@ import {
 } from "@/components/ui/tooltip";
 import StartTimeModal from "@/components/modals/StartTimeModal";
 import ScheduleModal from "@/components/modals/ScheduleModal";
+import { loadFromXlsx, downloadTemplate } from "@/lib/io";
+import { openGuide } from "@/lib/guide";
 
 interface ToolbarProps {
   onSelectAll: () => void;
@@ -26,33 +29,41 @@ interface ToolbarProps {
 }
 
 export default function Toolbar({ onSelectAll, onClearSelection, selectedIndices }: ToolbarProps) {
-  const activities = useAppStore((s) => s.activities);
-  const undoStack = useAppStore((s) => s.undoStack);
+  const activities           = useAppStore((s) => s.activities);
+  const undoStack            = useAppStore((s) => s.undoStack);
   const arePlannerColumnsHidden = useAppStore((s) => s.arePlannerColumnsHidden);
   const areTimeColumnsHidden = useAppStore((s) => s.areTimeColumnsHidden);
-  const areBreaksHidden = useAppStore((s) => s.areBreaksHidden);
-  const hiddenDays = useAppStore((s) => s.hiddenDays);
-  const undo = useAppStore((s) => s.undo);
+  const areBreaksHidden      = useAppStore((s) => s.areBreaksHidden);
+  const hiddenDays           = useAppStore((s) => s.hiddenDays);
+  const undo                 = useAppStore((s) => s.undo);
   const setPlannerColumnsHidden = useAppStore((s) => s.setPlannerColumnsHidden);
   const setTimeColumnsHidden = useAppStore((s) => s.setTimeColumnsHidden);
-  const setBreaksHidden = useAppStore((s) => s.setBreaksHidden);
-  const setHiddenDay = useAppStore((s) => s.setHiddenDay);
-  const setFormOpen = useAppStore((s) => s.setFormOpen);
-  const setEditIndex = useAppStore((s) => s.setEditIndex);
-  const pushUndo = useAppStore((s) => s.pushUndo);
-  const setActivities = useAppStore((s) => s.setActivities);
+  const setBreaksHidden      = useAppStore((s) => s.setBreaksHidden);
+  const setHiddenDay         = useAppStore((s) => s.setHiddenDay);
+  const setFormOpen          = useAppStore((s) => s.setFormOpen);
+  const setEditIndex         = useAppStore((s) => s.setEditIndex);
+  const pushUndo             = useAppStore((s) => s.pushUndo);
+  const setActivities        = useAppStore((s) => s.setActivities);
+  const setProductName       = useAppStore((s) => s.setProductName);
+  const setProgramName       = useAppStore((s) => s.setProgramName);
+  const reset                = useAppStore((s) => s.reset);
 
   const { open: openDialog } = useDialog();
 
   const [collapsed, setCollapsed] = useState(false);
   const [startTimeOpen, setStartTimeOpen] = useState(false);
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const hasActivities = activities.length > 0;
-  const canUndo = undoStack.length > 0;
-  const hasSelected = selectedIndices.size > 0;
+  const canUndo       = undoStack.length > 0;
+  const hasSelected   = selectedIndices.size > 0;
 
   const days = [...new Set(activities.map((a) => a.day))].sort((a, b) => a - b);
+
+  // ── Handlers ────────────────────────────────────────────────────────────────
 
   function handleAddCourse() {
     setEditIndex(null);
@@ -104,8 +115,116 @@ export default function Toolbar({ onSelectAll, onClearSelection, selectedIndices
     document.getElementById("programDetails")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  // ── File menu handlers ───────────────────────────────────────────────────────
+
+  function handleLoadClick() {
+    fileInputRef.current?.click();
+  }
+
+  async function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = ""; // reset so the same file can be re-loaded
+    setIsLoading(true);
+    try {
+      const result = await loadFromXlsx(file);
+      setActivities(result.activities);
+      if (result.productName) setProductName(result.productName);
+      if (result.programName) setProgramName(result.programName);
+    } catch (err) {
+      openDialog({
+        type: "error",
+        title: "Load Failed",
+        message: err instanceof Error ? err.message : "An unexpected error occurred while loading the file.",
+        buttons: [{ label: "OK", onClick: () => {}, variant: "primary" }],
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  function handleSaveClick() {
+    if (activities.length === 0) {
+      openDialog({
+        type: "warning",
+        title: "Nothing to Save",
+        message: "Nothing to save. Add at least one course before saving.",
+        buttons: [{ label: "OK", onClick: () => {}, variant: "primary" }],
+      });
+      return;
+    }
+    setScheduleOpen(true);
+  }
+
+  async function handleDownloadTemplate() {
+    setIsLoading(true);
+    try {
+      await downloadTemplate();
+    } catch (err) {
+      openDialog({
+        type: "error",
+        title: "Template Error",
+        message: err instanceof Error ? err.message : "Failed to generate template.",
+        buttons: [{ label: "OK", onClick: () => {}, variant: "primary" }],
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  function handleReset() {
+    openDialog({
+      type: "error",
+      title: "Reset App",
+      message: "This will clear all activities and reset the app. This cannot be undone. Are you sure?",
+      buttons: [
+        { label: "Cancel", onClick: () => {}, variant: "secondary" },
+        { label: "Reset", variant: "danger", onClick: () => { reset(); onClearSelection(); } },
+      ],
+    });
+  }
+
+  // ── Render ───────────────────────────────────────────────────────────────────
+
   return (
     <TooltipProvider>
+      {/* Hidden file input for Load */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".xlsx"
+        style={{ display: "none" }}
+        onChange={handleFileSelected}
+      />
+
+      {/* Loading overlay for file operations */}
+      {isLoading && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9600,
+            background: "rgba(0,0,0,0.25)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              background: "var(--surface-0)",
+              borderRadius: 12,
+              padding: "24px 40px",
+              fontSize: "var(--text-md)",
+              fontWeight: 600,
+              color: "var(--ink-primary)",
+            }}
+          >
+            Working…
+          </div>
+        </div>
+      )}
+
       {/* hamburger toggle */}
       <button
         onClick={() => setCollapsed((c) => !c)}
@@ -175,15 +294,65 @@ export default function Toolbar({ onSelectAll, onClearSelection, selectedIndices
             <DropdownMenuTrigger className="menu-btn">File</DropdownMenuTrigger>
             <DropdownMenuContent
               align="center"
-              style={{ fontFamily: "var(--font-jakarta), sans-serif", fontSize: "var(--text-sm)", minWidth: 130 }}
+              style={{ fontFamily: "var(--font-jakarta), sans-serif", fontSize: "var(--text-sm)", minWidth: 180 }}
             >
-              <DropdownMenuItem onSelect={() => { /* Phase 4 */ }}>Load</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => { /* Phase 4 */ }}>Save</DropdownMenuItem>
+              {/* Cloud section */}
+              <DropdownMenuLabel style={{ color: "var(--ink-tertiary)", fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                Cloud
+              </DropdownMenuLabel>
+
+              <Tooltip>
+                <TooltipTrigger style={{ display: "block" }}>
+                  <DropdownMenuItem
+                    disabled
+                    style={{ opacity: 0.45, cursor: "not-allowed" }}
+                  >
+                    My Curricula
+                  </DropdownMenuItem>
+                </TooltipTrigger>
+                <TooltipContent side="right">Sign in to access your saved curricula</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger style={{ display: "block" }}>
+                  <DropdownMenuItem
+                    disabled
+                    style={{ opacity: 0.45, cursor: "not-allowed" }}
+                  >
+                    Save to Cloud
+                  </DropdownMenuItem>
+                </TooltipTrigger>
+                <TooltipContent side="right">Sign in to save to the cloud</TooltipContent>
+              </Tooltip>
+
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => { /* Phase 4 */ }}>Reset</DropdownMenuItem>
+
+              {/* Local section */}
+              <DropdownMenuLabel style={{ color: "var(--ink-tertiary)", fontSize: "var(--text-xs)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                Local
+              </DropdownMenuLabel>
+
+              <DropdownMenuItem onSelect={handleLoadClick}>
+                Load from Excel
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={handleSaveClick}>
+                Save to Excel
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={handleDownloadTemplate}>
+                Download Template
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={openGuide}>
+                Guide
+              </DropdownMenuItem>
+
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => { /* Phase 4 */ }}>Guide</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => { /* Phase 4 */ }}>Template</DropdownMenuItem>
+
+              <DropdownMenuItem
+                variant="destructive"
+                onSelect={handleReset}
+              >
+                Reset
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -278,7 +447,7 @@ export default function Toolbar({ onSelectAll, onClearSelection, selectedIndices
             {arePlannerColumnsHidden ? "View Planner" : "Hide Planner"}
           </button>
 
-          {/* Report ↓ */}
+          {/* Report down */}
           {hasActivities && (
             <button className="menu-btn" onClick={scrollToReport}>
               Report{" "}
@@ -289,7 +458,7 @@ export default function Toolbar({ onSelectAll, onClearSelection, selectedIndices
             </button>
           )}
 
-          {/* Design ↑ */}
+          {/* Design up */}
           {hasActivities && (
             <button className="menu-btn" onClick={scrollToDesign}>
               Design{" "}
@@ -316,8 +485,33 @@ export default function Toolbar({ onSelectAll, onClearSelection, selectedIndices
           </Tooltip>
         </div>
 
-        {/* right spacer */}
-        <div />
+        {/* right — Sign In button (always visible) */}
+        <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: 16 }}>
+          {/* TODO Phase 6: wire Sign In button to NextAuth signIn() */}
+          <button
+            className="menu-btn"
+            style={{
+              border: "1px solid var(--border-default)",
+              borderRadius: 6,
+              padding: "3px 12px",
+              fontSize: "var(--text-xs)",
+              fontWeight: 600,
+              color: "var(--ink-secondary)",
+              background: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 5,
+            }}
+            onClick={() => { /* Phase 6 */ }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            Sign In
+          </button>
+        </div>
       </nav>
 
       {/* Modals */}

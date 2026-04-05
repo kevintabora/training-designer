@@ -30,7 +30,7 @@ export default function SummaryStats({ data }: SummaryStatsProps) {
         <StatCard label="Days" value={String(totalDays)} />
         <StatCard
           label="Avg per Day"
-          value={totalDays > 0 ? `${Math.round(totalMinutes / totalDays)} min` : "—"}
+          value={totalDays > 0 ? `${Math.round(totalMinutes / totalDays)} min` : "-"}
           sub={totalDays > 0 ? `${(totalMinutes / totalDays / 60).toFixed(1)} hrs` : undefined}
         />
       </div>

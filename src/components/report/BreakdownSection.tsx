@@ -85,7 +85,7 @@ export default function BreakdownSection({
                           flexShrink: 0,
                         }}
                       />
-                      {row.group ?? "—"}
+                      {row.group ?? "-"}
                     </TD>
                   )}
                   <TD>
@@ -115,7 +115,7 @@ export default function BreakdownSection({
               ))}
               {/* totals row */}
               <tr style={{ background: "var(--surface-1)", fontWeight: 700, borderTop: "2px solid var(--border-default)" }}>
-                {showGroupColumn && <TD>—</TD>}
+                {showGroupColumn && <TD>-</TD>}
                 <TD>Total</TD>
                 <TD align="right">{grandCount}</TD>
                 <TD align="right">{grandTotal} min</TD>
@@ -249,7 +249,7 @@ function BarChartView({ rows, colors }: BarChartViewProps) {
         />
         <Tooltip
           formatter={(value, _name, props) => [
-            `${Number(value)} min — ${(props.payload as { count?: number })?.count ?? 0} activities`,
+            `${Number(value)} min - ${(props.payload as { count?: number })?.count ?? 0} activities`,
             "Duration",
           ]}
           contentStyle={{

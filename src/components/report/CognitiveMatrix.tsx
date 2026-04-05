@@ -184,7 +184,7 @@ function MatrixTable({ matrix, label }: { matrix: MatrixData; label: string }) {
                       fontWeight: mins > 0 ? 600 : 400,
                     }}
                   >
-                    {mins > 0 ? `${mins} min` : "—"}
+                    {mins > 0 ? `${mins} min` : "-"}
                   </td>
                 );
               })}
@@ -196,7 +196,7 @@ function MatrixTable({ matrix, label }: { matrix: MatrixData; label: string }) {
                   color: "var(--ink-secondary)",
                 }}
               >
-                {rowTotals[ri] > 0 ? `${rowTotals[ri]} min` : "—"}
+                {rowTotals[ri] > 0 ? `${rowTotals[ri]} min` : "-"}
               </td>
             </tr>
           ))}
@@ -222,7 +222,7 @@ function MatrixTable({ matrix, label }: { matrix: MatrixData; label: string }) {
                   fontWeight: 700,
                 }}
               >
-                {colTotals[ci] > 0 ? `${colTotals[ci]} min` : "—"}
+                {colTotals[ci] > 0 ? `${colTotals[ci]} min` : "-"}
               </td>
             ))}
             <td
@@ -233,7 +233,7 @@ function MatrixTable({ matrix, label }: { matrix: MatrixData; label: string }) {
                 color: "var(--ink-primary)",
               }}
             >
-              {grandTotal > 0 ? `${grandTotal} min` : "—"}
+              {grandTotal > 0 ? `${grandTotal} min` : "-"}
             </td>
           </tr>
         </tbody>

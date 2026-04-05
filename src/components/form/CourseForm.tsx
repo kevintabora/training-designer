@@ -546,7 +546,7 @@ function ActivityBlockForm({
             onChange={(e) => onChange("transferLevel", e.target.value)}
             style={selectStyle}
           >
-            <option value="">— select —</option>
+            <option value="">- select -</option>
             {TRANSFER_LEVELS.map((t) => (
               <option key={t} value={t}>{t}</option>
             ))}
@@ -561,7 +561,7 @@ function ActivityBlockForm({
             onChange={(e) => onChange("instructionalMode", e.target.value)}
             style={selectStyle}
           >
-            <option value="">— select —</option>
+            <option value="">- select -</option>
             {INSTRUCTIONAL_MODES.map((m) => (
               <option key={m} value={m}>{m}</option>
             ))}

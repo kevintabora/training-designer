@@ -124,7 +124,7 @@ export default function BreakRow({
             {labelValue}
           </span>
         )}{" "}
-        —{" "}
+        -{" "}
         {editingDuration ? (
           <input
             ref={durRef}

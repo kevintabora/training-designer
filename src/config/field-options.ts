@@ -16,7 +16,7 @@ export const LEARNER_ACTIVITY_GROUPS = [
       "Video / Recording Review",
       "Reading",
       "Podcast / Audio Review",
-      "eLearning — Read, Watch, Listen",
+      "eLearning - Read, Watch, Listen",
     ],
   },
   {
@@ -24,7 +24,7 @@ export const LEARNER_ACTIVITY_GROUPS = [
     label: "Generative Processing",
     chartColor: "#1D9E75",
     activities: [
-      "eLearning — Interactive",
+      "eLearning - Interactive",
       "Q&A with Instructor / Expert",
       "Recap & Debrief",
       "Reflection",
@@ -39,7 +39,7 @@ export const LEARNER_ACTIVITY_GROUPS = [
     chartColor: "#BA7517",
     activities: [
       "Worked Example Review",
-      "eLearning — Simulate & Practice",
+      "eLearning - Simulate & Practice",
       "Software / Tool Practice",
       "Documentation Practice",
       "Job Aid & Reference Lookup Practice",
@@ -169,11 +169,11 @@ export const DELIVERY_METHODS = [
 
 export const CONTENT_TYPES = [
   "Facts / Concepts",
-  "Workflow — Operations / Admin / Support",
-  "Procedural — Software / Tools",
-  "Procedural — Communication Skills",
-  "Problem-Solving — Software / Tools",
-  "Problem-Solving — Communication Skills",
+  "Workflow - Operations / Admin / Support",
+  "Procedural - Software / Tools",
+  "Procedural - Communication Skills",
+  "Problem-Solving - Software / Tools",
+  "Problem-Solving - Communication Skills",
 ];
 
 export const TRANSFER_LEVELS = [
