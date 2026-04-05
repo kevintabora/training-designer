@@ -24,6 +24,8 @@ export interface AppState {
   defaultStartTime: string;
   areTimeColumnsHidden: boolean;
   arePlannerColumnsHidden: boolean;
+  areBreaksHidden: boolean;
+  isFormOpen: boolean;
   currentProductName: string;
   currentProgramName: string;
   hiddenDays: Record<number, boolean>;

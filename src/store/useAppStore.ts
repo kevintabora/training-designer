@@ -17,6 +17,8 @@ interface AppStore extends AppState {
   setProgramName: (name: string) => void;
   setHiddenDay: (day: number, hidden: boolean) => void;
   setEditIndex: (index: number | null) => void;
+  setFormOpen: (open: boolean) => void;
+  setBreaksHidden: (hidden: boolean) => void;
   setLoading: (loading: boolean) => void;
   reset: () => void;
 }
@@ -26,6 +28,8 @@ const initialState: AppState = {
   defaultStartTime: "09:00",
   areTimeColumnsHidden: true,
   arePlannerColumnsHidden: true,
+  areBreaksHidden: false,
+  isFormOpen: false,
   currentProductName: "",
   currentProgramName: "",
   hiddenDays: {},
@@ -81,6 +85,8 @@ export const useAppStore = create<AppStore>()(
       setHiddenDay: (day, hidden) =>
         set((s) => ({ hiddenDays: { ...s.hiddenDays, [day]: hidden } })),
       setEditIndex: (index) => set({ editIndex: index }),
+      setFormOpen: (open) => set({ isFormOpen: open }),
+      setBreaksHidden: (hidden) => set({ areBreaksHidden: hidden }),
       setLoading: (loading) => set({ isLoading: loading }),
 
       reset: () => set(initialState),
